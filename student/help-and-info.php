@@ -142,28 +142,97 @@ if (!isset($_POST['action'])) {
         .main-content { margin-left: 250px; flex: 1; padding: 1rem 2rem; min-height: 100vh; display: flex; flex-direction: column; }
         
         /* Topnav and Notification Styles (Copied from home-student.php) */
-        .topnav { background-color: #004ea8; padding: 1.5rem 2rem; display: flex; justify-content: space-between; align-items: center; color: white; font-weight: 700; font-size: 1.5rem; border-radius: 0.5rem; box-shadow: 0 2px 8px rgb(0 0 0 / 0.15); margin-bottom: 1.5rem; user-select: none; }
+        .topnav { 
+    background-color: #004ea8; 
+    padding: 1.5rem 2rem; 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    color: white; 
+    font-weight: 700; 
+    font-size: 1.5rem; 
+    border-radius: 0.5rem; 
+    box-shadow: 0 2px 8px rgb(0 0 0 / 0.15); 
+    margin-bottom: 1.5rem; 
+    user-select: none;
+    position: relative; /* ADD THIS */
+    z-index: 10000; /* ADD THIS */
+}
         .notif-btn { background: none; border: none; cursor: pointer; font-size: 1.75rem; position: relative; color: white; }
         .notif-badge { position: absolute; top: -6px; right: -10px; background-color: #ef4444; color: white; border-radius: 9999px; padding: 0 6px; font-size: 0.75rem; font-weight: 700; line-height: 1; user-select: none; }
-        .notif-dropdown { display: none; position: absolute; right: 0; top: 60px; width: 320px; background: white; border: 1px solid #ccc; border-radius: 0.5rem; box-shadow: 0 8px 16px rgba(0,0,0,0.1); z-index: 1000; max-height: 320px; overflow-y: auto; }
+.notif-dropdown {
+    display: none;
+    position: absolute;
+    right: 0;
+    top: 60px;
+    width: 320px;
+    background: white;
+    border: 1px solid #ccc;
+    border-radius: 0.5rem;
+    box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+    z-index: 99999 !important; /* INCREASED - was only 9999 */
+    max-height: 400px;
+    overflow-y: auto;
+}
         .notif-dropdown.show { display: block; }
         .notif-dropdown h4 { margin: 0; padding: 0.75rem 1rem; background: #004ea8; color: white; border-radius: 0.5rem 0.5rem 0 0; font-weight: 600; font-size: 1rem; }
-        .notif-item { padding: 0.75rem 1rem; border-bottom: 1px solid #eee; font-size: 0.875rem; color: #333; line-height: 1.2; display: flex; justify-content: space-between; align-items: center; background-color: white; }
+        .notif-item { 
+    padding: 0.75rem 1rem; 
+    border-bottom: 1px solid #eee; 
+    font-size: 0.875rem; 
+    color: #333; 
+    line-height: 1.2; 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    background-color: white;
+    position: relative; /* ADD THIS */
+    z-index: 100000; /* ADD THIS */
+}
         .notif-item.unread { background-color: #f0f8ff; border-left: 3px solid #004ea8; }
         .notif-item:last-child { border-bottom: none; }
         .notif-item small { color: #666; font-size: 0.75rem; display: block; margin-top: 4px; }
-        .view-btn { background-color: #10b981; color: white; padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; border: none; cursor: pointer; transition: background-color 0.2s; }
+        .view-btn { 
+    background-color: #10b981; 
+    color: white; 
+    padding: 4px 8px; 
+    border-radius: 4px; 
+    font-size: 0.75rem; 
+    border: none; 
+    cursor: pointer; 
+    transition: background-color 0.2s;
+    position: relative; /* ADD THIS */
+    z-index: 100001; /* ADD THIS */
+    pointer-events: auto; /* ADD THIS */
+}
         .view-btn:hover { background-color: #059669; }
-        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); display: none; justify-content: center; align-items: center; z-index: 2000; }
-        .modal-content { 
-            background: white; 
-            padding: 30px; 
-            border-radius: 8px; 
-            width: 90%; 
-            max-width: 700px; 
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2); 
-            position: relative; 
-        }
+.modal {
+    display: none; 
+    position: fixed; 
+    z-index: 999999 !important;
+    left: 0;
+    top: 0;
+    width: 100%; 
+    height: 100%; 
+    background-color: rgba(0,0,0,0.85);
+    justify-content: center;
+    align-items: center;
+}
+
+.modal.show {
+    display: flex !important;
+}
+
+.modal-content { 
+    background: #ffffff; 
+    padding: 30px; 
+    border-radius: 12px; 
+    width: 90%; 
+    max-width: 600px; 
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3); 
+    position: relative;
+    z-index: 1000000;
+}
         .close-btn { position: absolute; top: 10px; right: 15px; font-size: 1.5rem; font-weight: bold; color: #aaa; cursor: pointer; }
         .close-btn:hover { color: #333; }
         
@@ -248,49 +317,74 @@ if (!isset($_POST['action'])) {
     <div class="main-content">
         
         <div class="topnav" role="banner">
-            <div>Welcome to AU iTrace</div>
-            <div style="position: relative;">
-                <button class="notif-btn" onclick="toggleDropdown()" aria-label="Toggle Notifications" aria-expanded="false" aria-controls="notifDropdown">
-                    <i class='bx bxs-bell'></i>
-                    <?php if ($notifCount > 0): ?>
-                        <span class="notif-badge" id="notifBadge" aria-live="polite" aria-atomic="true"><?php echo $notifCount; ?></span>
-                    <?php endif; ?>
-                </button>
-                
-                <div class="notif-dropdown" id="notifDropdown" role="region" aria-live="polite" aria-label="Notifications List" tabindex="-1">
-                    <h4>🔔 Notifications</h4>
-                    <?php if (count($notifications) > 0): ?>
-                        <?php foreach ($notifications as $notif): ?>
-                            <?php $isUnread = $notif['isread'] == 0 ? 'unread' : ''; ?>
-                            <div class="notif-item <?= $isUnread ?>" tabindex="0">
-                                <div>
-                                    <strong><?php echo htmlspecialchars($notif['notif_title']); ?></strong>
-                                    <small><?php echo date("M d, Y h:i A", strtotime($notif['datecreated'])); ?></small>
-                                </div>
-                                
-                                <?php
-                                // Clean the title to remove newlines/carriage returns
-                                $clean_title = str_replace(["\r", "\n"], ' ', $notif['notif_title']);
-                                // JSON encode the message for safe passing to JavaScript
-                                $safe_message = htmlspecialchars(json_encode($notif['notif_message']), ENT_QUOTES, 'UTF-8');
-                                ?>
+    <div>Welcome to AU iTrace</div>
+    <div style="position: relative;">
+        <button class="notif-btn" onclick="toggleDropdown()" aria-label="Toggle Notifications" aria-expanded="false" aria-controls="notifDropdown">
+            <i class='bx bxs-bell'></i>
+            <?php if ($notifCount > 0): ?>
+                <span class="notif-badge" id="notifBadge" aria-live="polite" aria-atomic="true"><?php echo $notifCount; ?></span>
+            <?php endif; ?>
+        </button>
+        
+        <div class="notif-dropdown" id="notifDropdown" role="region" aria-live="polite" aria-label="Notifications List" tabindex="-1">
+            <h4>🔔 Notifications</h4>
+            <?php if (count($notifications) > 0): ?>
+                <?php foreach ($notifications as $notif): 
+    $msg = $notif['adminmessage'];
+    $isUnread = $notif['isread'] == 0 ? 'unread' : '';
 
-                                <button 
-                                    class="view-btn" 
-                                    onclick="showNotificationDetails(event, 
-                                        '<?php echo htmlspecialchars($clean_title, ENT_QUOTES); ?>', 
-                                        '<?php echo $safe_message; ?>'
-                                    )"
-                                    aria-label="View details for notification"
-                                >View</button>
-                            </div>
-                        <?php endforeach; ?>
-                    <?php else: ?>
-                        <div class="notif-item" tabindex="0">No notifications</div>
-                    <?php endif; ?>
-                </div>
-            </div>
+    // --- DYNAMIC LOGIC FOR TITLE, COLOR, AND ICON ---
+    if (strpos($msg, '[PENDING]') !== false) {
+        $displayTitle = "📝 Claim Pending";
+        $titleColor = "#2563eb";
+    } elseif (strpos($msg, '[APPROVED]') !== false) {
+        $displayTitle = "✅ Claim Approved";
+        $titleColor = "#10b981";
+    } elseif (strpos($msg, '[DECLINED]') !== false) {
+        $displayTitle = "❌ Claim Declined";
+        $titleColor = "#ef4444";
+    } elseif (strpos($msg, '[RETURNED]') !== false) {
+        $displayTitle = "🎁 Item Returned";
+        $titleColor = "#0891b2";
+    } else {
+        $displayTitle = "Notification Update";
+        $titleColor = "#004ea8";
+    }
+
+    // Clean the message
+    $cleanMsg = str_replace(['[PENDING]: ', '[APPROVED]: ', '[DECLINED]: ', '[RETURNED]: '], '', $msg);
+    
+    // JSON encode for safe data attribute storage
+    $safeTitle = htmlspecialchars($displayTitle, ENT_QUOTES, 'UTF-8');
+    $safeMessage = htmlspecialchars($cleanMsg, ENT_QUOTES, 'UTF-8');
+?> 
+<div class="notif-item <?= $isUnread ?>" tabindex="0">
+    <div style="flex-grow: 1; padding-right: 10px;">
+        <strong style="color: <?= $titleColor ?>; display: block; font-size: 0.9rem;">
+            <?php echo htmlspecialchars($displayTitle); ?>
+        </strong>
+        <p style="margin: 2px 0; font-size: 0.8rem; color: #4b5563; line-height: 1.3;">
+            <?php echo htmlspecialchars(mb_strimwidth($cleanMsg, 0, 50, "...")); ?>
+        </p>
+        <small style="color: #9ca3af; font-size: 0.7rem;">
+            <?php echo date("M d, Y h:i A", strtotime($notif['datecreated'])); ?>
+        </small>
+    </div>
+    
+    <button 
+        class="view-btn" 
+        data-title="<?= $safeTitle ?>"
+        data-message="<?= $safeMessage ?>"
+        aria-label="View details"
+    >View</button>
+</div>
+<?php endforeach; ?>
+            <?php else: ?>
+                <div class="notif-item" tabindex="0">No notifications</div>
+            <?php endif; ?>
         </div>
+    </div>
+</div>
 
         <div class="content-wrapper" role="main">
             <h1 class="text-2xl font-semibold mb-3">Help and Information</h1>
@@ -468,46 +562,66 @@ function toggleDropdown() {
 /**
  * Shows the notification details in a modal.
  */
-function showNotificationDetails(event, title, message) {
-    // Stop the click event from closing the dropdown immediately
-    event.stopPropagation();
-    
-    try {
-        let decodedMessage;
-        try {
-            // Safely parse the JSON string passed from PHP
-            decodedMessage = JSON.parse(message);
-        } catch (e) {
-            decodedMessage = message;
+// Add this event listener - replace the old showNotificationDetails approach
+document.addEventListener('DOMContentLoaded', function() {
+    // Event delegation for view buttons
+    document.addEventListener('click', function(e) {
+        if (e.target.classList.contains('view-btn')) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const title = e.target.getAttribute('data-title');
+            const message = e.target.getAttribute('data-message');
+            
+            console.log("View button clicked!");
+            console.log("Title:", title);
+            console.log("Message:", message);
+            
+            showNotificationDetails(null, title, message);
         }
+    });
+});
 
-        // Fill modal content
-        document.getElementById('modalTitle').textContent = 'Notification Details';
-        document.getElementById('modal-notif-title').textContent = title;
-        // The whitespace-pre-wrap CSS will handle the formatting of the text content
-        document.getElementById('modal-notif-message').textContent = decodedMessage;
+function showNotificationDetails(event, title, message) {
+    console.log("=== Modal function called ===");
+    
+    const modal = document.getElementById('notificationModal');
+    const modalTitle = document.getElementById('modal-notif-title');
+    const modalMessage = document.getElementById('modal-notif-message');
 
-        // Show the modal
-        document.getElementById('notificationModal').style.display = 'flex';
-    } catch (e) {
-        console.error("Error displaying notification data:", e);
+    modalTitle.innerText = title;
+    modalMessage.innerText = message;
+
+    modal.classList.add('show');
+    
+    const dropdown = document.getElementById('notifDropdown');
+    if (dropdown) {
+        dropdown.classList.remove('show');
     }
 }
 
 function closeModal() {
-    document.getElementById('notificationModal').style.display = 'none';
+    const modal = document.getElementById('notificationModal');
+    modal.classList.remove('show');
 }
 
 // Close dropdown if clicked outside
 document.addEventListener('click', function (e) {
     const dropdown = document.getElementById('notifDropdown');
     const button = document.querySelector('.notif-btn');
-    const modal = document.getElementById('notificationModal');
     
-    // Check if the click is outside the dropdown AND the notification button AND the modal
-    if (dropdown && button && modal && !dropdown.contains(e.target) && !button.contains(e.target) && modal.style.display !== 'flex') {
-        dropdown.classList.remove('show');
-        button.setAttribute('aria-expanded', 'false');
+    // Only close the dropdown if the click is NOT on the button and NOT inside the dropdown
+    if (dropdown.classList.contains('show')) {
+        if (!dropdown.contains(e.target) && !button.contains(e.target)) {
+            dropdown.classList.remove('show');
+            button.setAttribute('aria-expanded', 'false');
+        }
+    }
+
+    // Close modal if clicking the background
+    const modal = document.getElementById('notificationModal');
+    if (e.target === modal) {
+        closeModal();
     }
 });
 
@@ -518,23 +632,20 @@ function clearNotifCount() {
     if (!notifBadge) return;
     
     const xhr = new XMLHttpRequest();
-    // The AJAX request points back to this same file (help-and-info-student.php)
-    xhr.open('POST', 'help-and-info-student.php', true); 
+    // FIX: Changed from 'help-and-info-student.php' to 'help-and-info.php'
+    xhr.open('POST', 'help-and-info.php', true); 
     xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
     
     xhr.onload = function () {
         if (xhr.status === 200 && xhr.responseText.trim() === 'Success') {
-            // Success: Remove the badge from the UI
             notifBadge.remove();
-            
-            // Visually mark items as read
             document.querySelectorAll('.notif-item.unread').forEach(item => {
                 item.classList.remove('unread');
             });
+        } else {
+            console.error("Server responded with:", xhr.responseText);
         }
     };
-    
-    // Send the POST data that the PHP block at the top of the file checks for
     xhr.send('action=clear_notifications'); 
 }
 </script>
