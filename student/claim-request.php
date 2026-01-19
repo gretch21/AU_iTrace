@@ -92,15 +92,16 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $userData = $userQuery->get_result()->fetch_assoc();
         
         if ($userData) {
-            $targetUID = $userData['userID'];
-            $iName = $item['itemname'];
-            // This is the specific message you asked for
-            $notifMsg = "The claim request form you submitted for '$iName' is pending for admin review.";
-            
-            $notif = $link->prepare("INSERT INTO tblnotifications (userID, adminmessage, datecreated, isread) VALUES (?, ?, NOW(), 0)");
-            $notif->bind_param("is", $targetUID, $notifMsg);
-            $notif->execute();
-        }
+        $targetUID = $userData['userID'];
+        $iName = $item['itemname']; // Ensure you have fetched the item name
+        
+        // Use [PENDING] as a keyword for the UI logic
+        $notifMsg = "[PENDING]: Your claim request for '$iName' has been submitted and is currently under review by the administrator.";
+        
+        $notif = $link->prepare("INSERT INTO tblnotifications (userID, adminmessage, datecreated, isread) VALUES (?, ?, NOW(), 0)");
+        $notif->bind_param("is", $targetUID, $notifMsg);
+        $notif->execute();
+    }
         
         echo "<script>alert('Claim submitted successfully!'); window.location.href='found-items-student.php';</script>";
     }
