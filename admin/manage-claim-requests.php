@@ -238,78 +238,86 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $getUserIDStmt->close();
 
                     if (!empty($userID)) {
-                        // 1. Determine final message (automated or custom admin message)
-                        $finalMessage = empty(trim($adminmessage))
-                            ? generate_automated_message($studentName, $itemName, $scheduleddatetime) 
-                            : $adminmessage;
-                        
-                        // 2. Insert into tblnotifications 
-                        $insertNotif = $link->prepare("
-                            INSERT INTO tblnotifications (userID, adminmessage, scheduleddatetime, isread, datecreated)
-                            VALUES (?, ?, ?, 0, NOW())
-                        ");
-                        $insertNotif->bind_param("iss", $userID, $finalMessage, $scheduleddatetime);
-                        $insertNotif->execute();
-                        $insertNotif->close();
-                    }
+    // Ensure we are using the EXACT variable from the POST data
+    $finalMessage = "[APPROVED]: " . (empty(trim($adminmessage))
+        ? generate_automated_message($studentName, $itemName, $scheduleddatetime) // Use $scheduleddatetime from $_POST
+        : $adminmessage);
+    
+    // Insert into tblnotifications 
+    $insertNotif = $link->prepare("
+        INSERT INTO tblnotifications (userID, adminmessage, scheduleddatetime, isread, datecreated)
+        VALUES (?, ?, ?, 0, NOW())
+    ");
+    $insertNotif->bind_param("iss", $userID, $finalMessage, $scheduleddatetime);
+    $insertNotif->execute();
+    $insertNotif->close();
+}
                 }
             }
         } // End if(!empty($foundID))
 
     
+//DECLINED NOTIFICATION
+} elseif (isset($_POST['action']) && $_POST['action'] === 'decline') {
+    $claimID = $_POST['claimID'];
+    $foundID = null;
+    $studentID = null;
+    $itemName = 'Unknown Item';
 
-    } elseif (isset($_POST['action']) && $_POST['action'] === 'decline') {
-        $claimID = $_POST['claimID'];
-        $foundID = null;
-        $studentID = null;
-        $itemName = 'Unknown Item'; // Initialize for logging
-
-        // Get foundID and item name before updating status
-        $result = $link->prepare("
-            SELECT cr.foundID, cr.studentID, fi.itemname
-            FROM tblclaimrequests cr
-            LEFT JOIN tblfounditems fi ON cr.foundID = fi.foundID
-            WHERE cr.claimID = ?
-        ");
-        $result->bind_param("s", $claimID);
-        $result->execute();
-        $result->bind_result($foundID, $studentID, $fetchedItemName);
-        $result->fetch();
-        if (!empty($fetchedItemName)) {
-            $itemName = $fetchedItemName;
-        }
-        $result->close();
-
-        // Decline the claim
-        $stmt = $link->prepare("UPDATE tblclaimrequests SET status = 'Declined' WHERE claimID = ?");
-        $stmt->bind_param("s", $claimID);
-        $stmt->execute();
-        $stmt->close();
-        
-        // --- LOGGING: Log the decline action ---
-        $log_action = "Declined Claim Request (ClaimID: {$claimID}) for Item: {$itemName}";
-        log_admin_action($link, $username, $log_action, "Manage Claim Requests", $foundID);
-        // --- END LOGGING ---
-
-        // Update tblitemstatus
-        if (!empty($studentID)) {
-             $status = 'Declined';
-             $stmt2 = $link->prepare("
-                 INSERT INTO tblitemstatus (claimID, studentID, status, statusdate)
-                 VALUES (?, ?, ?, NOW())
-                 ON DUPLICATE KEY UPDATE studentID = VALUES(studentID), status = VALUES(status), statusdate = NOW()
-             ");
-             // NOTE: Changed 'iis' to 'sis' assuming claimID is VARCHAR(20) based on tblclaimrequests structure
-             $stmt2->bind_param("sis", $claimID, $studentID, $status);
-             $stmt2->execute();
-             $stmt2->close();
-        }
+    // Get foundID, studentID, and item name
+    $result = $link->prepare("
+        SELECT cr.foundID, cr.studentID, fi.itemname
+        FROM tblclaimrequests cr
+        LEFT JOIN tblfounditems fi ON cr.foundID = fi.foundID
+        WHERE cr.claimID = ?
+    ");
+    $result->bind_param("s", $claimID);
+    $result->execute();
+    $result->bind_result($foundID, $studentID, $fetchedItemName);
+    $result->fetch();
+    if (!empty($fetchedItemName)) {
+        $itemName = $fetchedItemName;
     }
+    $result->close();
+
+    // Decline the claim
+    $stmt = $link->prepare("UPDATE tblclaimrequests SET status = 'Declined' WHERE claimID = ?");
+    $stmt->bind_param("s", $claimID);
+    $stmt->execute();
+    $stmt->close();
+    
+    // Logging
+    $log_action = "Declined Claim Request (ClaimID: {$claimID}) for Item: {$itemName}";
+    log_admin_action($link, $username, $log_action, "Manage Claim Requests", $foundID);
+
+
+    // Keep the Notification logic below if you still want the student to be notified of the decline
+    if (!empty($studentID)) {
+         $getUserIDStmt = $link->prepare("SELECT userID FROM tblsystemusers WHERE studentID = ?");
+         $getUserIDStmt->bind_param("i", $studentID);
+         $getUserIDStmt->execute();
+         $getUserIDStmt->bind_result($userID);
+         $getUserIDStmt->fetch();
+         $getUserIDStmt->close();
+         
+         if (!empty($userID)) {
+             $declineMessage = "[DECLINED]: We regret to inform you that your claim request for '{$itemName}' has been declined. The proof of ownership submitted appeared unclear or insufficient to verify your claim. If you believe this was an error, please visit the Office of Student Affairs with additional documentation. Thank you for your understanding.";
+             
+             $insertNotif = $link->prepare("
+                 INSERT INTO tblnotifications (userID, adminmessage, datecreated, isread)
+                 VALUES (?, ?, NOW(), 0)
+             ");
+             $insertNotif->bind_param("is", $userID, $declineMessage);
+             $insertNotif->execute();
+             $insertNotif->close();
+         }
+    }
+} // ← This closes the decline elseif block
 
     // Redirect after processing to avoid form resubmission
     header("Location: manage-claim-requests.php");
     exit;
-}
+} // ← This closes the if ($_SERVER['REQUEST_METHOD'] === 'POST') block
 
 // Filters for listing
 $search = isset($_GET['search']) ? trim($_GET['search']) : '';
